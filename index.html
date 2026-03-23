@@ -1,11 +1,757 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>UniDex</title>
+  <meta
+    name="description"
+    content="UniDex: A Robot Foundation Suite for Universal Dexterous Hand Control from Egocentric Human Videos."
+  >
+  <style>
+    :root {
+      --bg: #ffffff;
+      --fg: #1f1f1f;
+      --muted: #667085;
+      --line: #d9e0ea;
+      --soft: #f7f9fc;
+      --blue: #2d8cff;
+      --blue-soft: #edf5ff;
+      --button: #2f3136;
+      --max: 1140px;
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--fg);
+      background: var(--bg);
+      font-family: "Helvetica Neue", "Avenir Next", Avenir, "Segoe UI", sans-serif;
+      line-height: 1.65;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img,
+    video {
+      display: block;
+      width: 100%;
+      border-radius: 10px;
+    }
+
+    .container {
+      width: min(calc(100% - 32px), var(--max));
+      margin: 0 auto;
+    }
+
+    .hero {
+      padding: 38px 0 24px;
+      text-align: center;
+    }
+
+    .venue {
+      margin: 0 0 10px;
+      color: var(--blue);
+      font-size: 1.18rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .title {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.45rem);
+      line-height: 1.08;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .authors {
+      margin-top: 26px;
+      font-size: 1rem;
+      line-height: 1.9;
+    }
+
+    .author-name {
+      color: var(--blue);
+      white-space: nowrap;
+    }
+
+    .meta {
+      margin-top: 18px;
+      color: var(--fg);
+      font-size: 0.98rem;
+    }
+
+    .meta-note {
+      margin-top: 6px;
+      color: var(--fg);
+      font-size: 0.95rem;
+    }
+
+    .actions {
+      margin-top: 28px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .action {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 52px;
+      padding: 0 22px;
+      border-radius: 999px;
+      background: var(--button);
+      color: #ffffff;
+      font-size: 0.98rem;
+      font-weight: 600;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .action svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex: 0 0 auto;
+    }
+
+    .action img {
+      display: block;
+      width: auto;
+      height: 18px;
+      border-radius: 0;
+      flex: 0 0 auto;
+      object-fit: contain;
+    }
+
+    .logo-arxiv {
+      height: 16px;
+    }
+
+    .logo-github {
+      height: 18px;
+      filter: invert(1);
+    }
+
+    .logo-hf {
+      height: 18px;
+    }
+
+    .action.disabled {
+      opacity: 0.68;
+      cursor: default;
+    }
+
+    .section {
+      padding: 14px 0 12px;
+    }
+
+    .section h2 {
+      margin: 0 0 14px;
+      font-size: 1.6rem;
+      font-weight: 700;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 10px;
+    }
+
+    .section p {
+      margin: 0 0 12px;
+      font-size: 1rem;
+    }
+
+    .figure {
+      margin: 14px 0 22px;
+    }
+
+    .caption {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      text-align: center;
+    }
+
+    .grid-2,
+    .grid-3 {
+      display: grid;
+      gap: 18px;
+      margin: 16px 0 24px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .align-start {
+      align-items: start;
+    }
+
+    .dataset-row {
+      grid-template-columns: 1.18fr 0.82fr;
+      align-items: stretch;
+    }
+
+    .vla-row {
+      grid-template-columns: 1fr 1fr;
+      align-items: stretch;
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin: 16px 0 24px;
+    }
+
+    .overview-card {
+      display: block;
+      padding: 14px 13px 12px;
+      border: 1px solid #b8d7ff;
+      border-radius: var(--radius);
+      background: var(--blue-soft);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .overview-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(45, 140, 255, 0.08);
+    }
+
+    .overview-card h3 {
+      margin: 0 0 8px;
+      color: #1262d6;
+      font-size: 0.96rem;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .overview-card p {
+      margin: 0;
+      color: #22508d;
+      font-size: 0.84rem;
+      line-height: 1.52;
+    }
+
+    .panel {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    .panel-tight {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .panel h3 {
+      margin: 0 0 10px;
+      font-size: 1.08rem;
+    }
+
+    .panel p {
+      margin: 10px 0 0;
+      font-size: 0.96rem;
+      color: var(--muted);
+    }
+
+    .dataset-note {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    .retarget-figure {
+      width: 88%;
+      margin: 0 auto;
+    }
+
+    .model-figure {
+      width: 100%;
+      margin-left: 0;
+    }
+
+    .video-card {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      box-shadow: 0 8px 24px rgba(16, 24, 40, 0.06);
+    }
+
+    .video-card video {
+      border-radius: 0;
+    }
+
+    .video-meta {
+      padding: 16px 18px 18px;
+    }
+
+    .media-title {
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .media-desc {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .crop-shell {
+      border-radius: 10px;
+      overflow: visible;
+    }
+
+    .pdf-wrap {
+      width: 100%;
+      overflow: hidden;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .pdf-wrap object {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #fff;
+    }
+
+    .pdf-teaser {
+      aspect-ratio: 1528.44 / 607.827;
+    }
+
+    .pdf-retarget {
+      aspect-ratio: 972.665 / 712.284;
+    }
+
+    .pdf-faas {
+      aspect-ratio: 663.96 / 321.377;
+    }
+
+    .pdf-model {
+      aspect-ratio: 968.606 / 237.938;
+    }
+
+    .pdf-results {
+      aspect-ratio: 1228.03 / 396.032;
+    }
+
+    .pdf-obj {
+      aspect-ratio: 1270.2 / 337.473;
+    }
+
+    .pdf-hand {
+      aspect-ratio: 1062.1 / 332.669;
+    }
+
+    .pdf-cap {
+      aspect-ratio: 1388.81 / 312.897;
+    }
+
+    .crop-shell img,
+    .crop-1 img,
+    .crop-2 img,
+    .crop-3 img {
+      width: 100%;
+      max-width: 100%;
+      margin: 0;
+    }
+
+    pre {
+      margin: 0;
+      padding: 16px;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--soft);
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+
+    footer {
+      padding: 26px 0 40px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 900px) {
+      .grid-2,
+      .grid-3,
+      .grid-4 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h1>UniDex</h1>
-  <p>Website </p>
+  <div class="container">
+    <header class="hero">
+      <div class="venue">CVPR 2026</div>
+      <h1 class="title">UniDex: A Robot Foundation Suite for Universal Dexterous Hand Control from Egocentric Human Videos</h1>
+
+      <div class="authors">
+        <a class="author-name" href="https://www.gu-zhang.com/" target="_blank" rel="noreferrer">Gu Zhang</a><sup>1,2,*†</sup>,
+        <a class="author-name" href="https://github.com/HACLINE" target="_blank" rel="noreferrer">Qicheng Xu</a><sup>1,*</sup>,
+        <a class="author-name" href="https://haozhe-zhang04.github.io/" target="_blank" rel="noreferrer">Haozhe Zhang</a><sup>1,*</sup>,
+        <a class="author-name" href="https://kingspenguin.github.io/" target="_blank" rel="noreferrer">Jianhan Ma</a><sup>2,*</sup>,
+        <a class="author-name" href="https://openreview.net/profile?id=~Long_He2" target="_blank" rel="noreferrer">Long He</a><sup>1,*</sup>,
+        <a class="author-name" href="https://github.com/chillinFree" target="_blank" rel="noreferrer">Yiming Bao</a><sup>1,*</sup>,
+        <a class="author-name" href="https://zeyuping.github.io/" target="_blank" rel="noreferrer">Zeyu Ping</a><sup>3</sup>,
+        <a class="author-name" href="https://gemcollector.github.io/" target="_blank" rel="noreferrer">Zhecheng Yuan</a><sup>1,2</sup>,
+        <a class="author-name" href="https://ctp314.github.io/" target="_blank" rel="noreferrer">Chenhao Lu</a><sup>1</sup>,
+        <a class="author-name" href="https://michaelyuancb.github.io/" target="_blank" rel="noreferrer">Chengbo Yuan</a><sup>1</sup>,
+        <a class="author-name" href="https://tinhal.github.io/" target="_blank" rel="noreferrer">Tianhai Liang</a><sup>1</sup>,
+        <a class="author-name" href="https://scholar.google.com/citations?user=BOYQK4IAAAAJ&amp;hl=zh-CN" target="_blank" rel="noreferrer">Xiaoyu Tian</a><sup>1</sup>,
+        <a class="author-name" href="https://github.com/smap20" target="_blank" rel="noreferrer">Maanping Shao</a><sup>1</sup>,
+        <a class="author-name" href="https://openreview.net/profile?id=~Feihong_Zhang1" target="_blank" rel="noreferrer">Feihong Zhang</a><sup>1</sup>,
+        <a class="author-name" href="https://dingmyu.github.io/" target="_blank" rel="noreferrer">Mingyu Ding</a><sup>4</sup>,
+        <a class="author-name" href="https://yang-gao.weebly.com/" target="_blank" rel="noreferrer">Yang Gao</a><sup>1,2</sup>,
+        <a class="author-name" href="https://sites.google.com/view/fromandto" target="_blank" rel="noreferrer">Hao Zhao</a><sup>1</sup>,
+        <a class="author-name" href="https://hangzhaomit.github.io/" target="_blank" rel="noreferrer">Hang Zhao</a><sup>1,2</sup>,
+        <a class="author-name" href="http://hxu.rocks/" target="_blank" rel="noreferrer">Huazhe Xu</a><sup>1,2</sup>
+      </div>
+
+      <div class="meta">
+        <sup>1</sup>Tsinghua University &nbsp;
+        <sup>2</sup>Shanghai Qizhi Institute &nbsp;
+        <sup>3</sup>Sun Yat-sen University &nbsp;
+        <sup>4</sup>The University of North Carolina at Chapel Hill
+      </div>
+      <div class="meta-note">* Core Contributors &nbsp;&nbsp; † Project Lead</div>
+
+      <div class="actions">
+        <a class="action" href="assets/UniDex_Arxiv.pdf" target="_blank" rel="noreferrer">
+          <img
+            class="logo-arxiv"
+            src="assets/logos/arxiv.svg"
+            alt="arXiv logo"
+          >
+          <span>arXiv</span>
+        </a>
+        <a class="action" href="assets/UniDex_Arxiv.pdf" target="_blank" rel="noreferrer">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"></path><path d="M15 3v4h4"></path><path d="M10 12h6"></path><path d="M10 16h6"></path><path d="M10 8h2"></path></svg>
+          <span>Paper</span>
+        </a>
+        <a class="action" href="https://github.com/unidex-ai/UniDex" target="_blank" rel="noreferrer">
+          <img
+            class="logo-github"
+            src="assets/logos/github-mark.png"
+            alt="GitHub logo"
+          >
+          <span>Code</span>
+        </a>
+        <a class="action" href="https://huggingface.co/UniDex-ai/UniDex" target="_blank" rel="noreferrer">
+          <img
+            class="logo-hf"
+            src="assets/logos/huggingface.svg"
+            alt="Hugging Face logo"
+          >
+          <span>Model</span>
+        </a>
+      </div>
+    </header>
+
+    <section class="section">
+      <div class="figure">
+        <div class="crop-shell crop-2">
+          <img src="assets/images/new_teaser.png" alt="UniDex teaser figure">
+        </div>
+      </div>
+      <h2>Abstract</h2>
+      <p>
+        Dexterous manipulation remains challenging due to the cost of collecting real-robot teleoperation data,
+        the heterogeneity of hand embodiments, and the high dimensionality of control. We present UniDex, a robot
+        foundation suite that couples a large-scale robot-centric dataset with a unified vision-language-action
+        policy and a practical human-data capture setup for universal dexterous hand control. First, we construct
+        UniDex-Dataset, a robot-centric dataset over 50K trajectories across eight dexterous hands derived from
+        egocentric human videos. To transform human data into robot-executable trajectories, we employ a
+        human-in-the-loop retargeting procedure to align fingertip trajectories while preserving plausible
+        hand-object contacts. Second, we introduce FAAS, a unified action space that maps functionally similar
+        actuators to shared coordinates, enabling cross-hand transfer, and train UniDex-VLA, a 3D VLA policy
+        pretrained on UniDex-Dataset and finetuned with task demonstrations. In addition, we build UniDex-Cap,
+        a portable setup for human-robot data co-training that reduces reliance on costly robot demonstrations.
+      </p>
+    </section>
+
+    <section class="section" id="overview">
+      <h2>Overview</h2>
+      <div class="grid-4">
+        <a class="overview-card" href="#dataset">
+          <h3>UniDex-Dataset</h3>
+          <p>
+            Transform egocentric human videos into robot data with human-in-the-loop retargeting, producing a
+            scalable robot-centric dexterous dataset.
+          </p>
+        </a>
+        <a class="overview-card" href="#vla">
+          <h3>FAAS + UniDex-VLA</h3>
+          <p>
+            Learn a unified dexterous VLA in a shared function-actuator-aligned action space for tool use and
+            robot hand generalization.
+          </p>
+        </a>
+        <a class="overview-card" href="#tool-use">
+          <h3>Tool-Use Tasks</h3>
+          <p>
+            Evaluate dexterous manipulation on real-world long-horizon tasks including coffee making, sweeping,
+            watering flowers, cutting bags, and using a mouse.
+          </p>
+        </a>
+        <a class="overview-card" href="#generalization">
+          <h3>Zero-Shot Cross-Hand Transfer</h3>
+          <p>
+            Transfer policies across dexterous hands with different kinematics and DoFs through FAAS and diverse
+            pretraining.
+          </p>
+        </a>
+        <a class="overview-card" href="#cap">
+          <h3>UniDex-Cap</h3>
+          <p>
+            Capture synchronized human demonstrations with a portable setup and convert them into robot-centric
+            trajectories for co-training.
+          </p>
+        </a>
+      </div>
+    </section>
+
+    <section class="section" id="dataset">
+      <h2>UniDex-Dataset</h2>
+      <p>
+        UniDex-Dataset focuses on converting large-scale human data into robot data. The key step is
+        <strong>human-in-the-loop retargeting</strong>: human fingertip trajectories are aligned to robot hands
+        with interactive adjustment so that the resulting robot executions preserve physically plausible contacts.
+        This turns egocentric human manipulation videos into robot-executable dexterous trajectories suitable for
+        large-scale pretraining.
+      </p>
+
+      <div class="grid-2 dataset-row">
+        <div class="panel panel-tight">
+          <h3>Dataset Video</h3>
+          <img src="assets/gifs/unidex_dataset.gif" alt="UniDex dataset video montage as animated gif">
+          <p class="dataset-note">8 hands, over 50k trajectories, and 9M paired image-pointcloud-action frames.</p>
+        </div>
+        <div class="panel panel-tight">
+          <h3>Human-in-the-Loop Retargeting</h3>
+          <div class="crop-shell retarget-figure">
+            <img src="assets/images/retarget_new.png" alt="Human-in-the-loop retargeting pipeline">
+          </div>
+          <div class="caption">From human data to robot data through retargeting and visual alignment.</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Human Data</h3>
+          <video controls playsinline preload="metadata">
+            <source src="assets/videos/human_example.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="panel">
+          <h3>Robot Data</h3>
+          <video controls playsinline preload="metadata">
+            <source src="assets/videos/robot_example.mp4" type="video/mp4">
+          </video>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="vla">
+      <h2>FAAS + UniDex-VLA</h2>
+
+      <div class="grid-2 vla-row">
+        <div class="panel panel-tight">
+          <h3>FAAS</h3>
+          <div class="crop-shell crop-1">
+            <img src="assets/images/detailed_faas.png" alt="FAAS mapping">
+          </div>
+          <p>
+            FAAS maps actuators with the <strong>same functional role</strong> to shared coordinates, enabling
+            transfer across dexterous hands with different kinematics and DoFs.
+          </p>
+        </div>
+        <div class="panel panel-tight">
+          <h3>UniDex-VLA</h3>
+          <div class="crop-shell model-figure">
+            <img src="assets/images/model.png" alt="UniDex-VLA architecture">
+          </div>
+          <p>
+            UniDex-VLA is a <strong>3D vision-language-action policy</strong> that takes pointcloud observations,
+            language instructions, and proprioception, and predicts dexterous action chunks in FAAS.
+          </p>
+        </div>
+      </div>
+
+      <h2 id="tool-use">Tool-Use Tasks</h2>
+      <div class="grid-3">
+        
+        <div class="video-card">
+          <video controls playsinline preload="metadata">
+            <source src="assets/videos/cut_bags_chips.mp4" type="video/mp4">
+          </video>
+          <div class="video-meta">
+            <div class="media-title">Cut Bags | Wuji Hand</div>
+            <p class="media-desc">Insert fingers into scissors and cut a chips bag in a human-like grasp. -- 2x speed</p>
+          </div>
+        </div>
+        <div class="video-card">
+          <video controls playsinline preload="metadata">
+            <source src="assets/videos/cut_bags_mdou.mp4" type="video/mp4">
+          </video>
+          <div class="video-meta">
+            <div class="media-title">Cut Bags | Wuji Hand</div>
+            <p class="media-desc">The same scissor manipulation policy transfers to another bag variant. -- 2x speed</p>
+          </div>
+        </div>
+        <div class="video-card">
+          <video controls playsinline preload="metadata">
+            <source src="assets/videos/play_game.mp4" type="video/mp4">
+          </video>
+          <div class="video-meta">
+            <div class="media-title">Use Mouse | Wuji Hand</div>
+            <p class="media-desc">Place fingers on the mouse, drag the file, and click to finish the desktop task. -- 1x speed</p>
+          </div>
+        </div>
+        <div class="video-card">
+          <video controls playsinline preload="metadata">
+            <source src="assets/videos/spray.mp4" type="video/mp4">
+          </video>
+          <div class="video-meta">
+            <div class="media-title">Water Flowers | Wuji Hand</div>
+            <p class="media-desc">Lift the spray bottle and press the trigger with the thumb to water flowers. -- 1x speed</p>
+          </div>
+        </div>
+        <div class="video-card">
+          <video controls playsinline preload="metadata">
+            <source src="assets/videos/make_coffee.mp4" type="video/mp4">
+          </video>
+          <div class="video-meta">
+            <div class="media-title">Make Coffee | Inspire Hand</div>
+            <p class="media-desc">Grasp the kettle, move to the dripper, and pour water for coffee making. -- 1x speed</p>
+          </div>
+        </div>
+        <div class="video-card">
+          <video controls playsinline preload="metadata">
+            <source src="assets/videos/sweep.mp4" type="video/mp4">
+          </video>
+          <div class="video-meta">
+            <div class="media-title">Sweep Objects | Inspire Hand</div>
+            <p class="media-desc">Grasp a sweeper and sweep tabletop objects into the dustpan. -- 2x speed</p>
+          </div>
+        </div>
+        
+      </div>
+
+      <!-- <div class="figure">
+        <div class="crop-shell crop-2">
+          <img src="assets/images/average_task_progress_morandi_wide.png" alt="Main benchmark results">
+        </div>
+        <div class="caption">Performance on five real-world dexterous tool-use tasks.</div>
+      </div> -->
+
+      <h2 id="generalization">Generalization</h2>
+      <div class="grid-3">
+        
+        <div class="video-card">
+          <video controls playsinline preload="metadata">
+            <source src="assets/videos/cross_hand_generalization_wuji.mp4" type="video/mp4">
+          </video>
+          <div class="video-meta">
+            <div class="media-title">Cross-Hand Transfer | Wuji Hand</div>
+            <p class="media-desc">A policy trained on Inspire Hand is deployed  <strong>zero-shot</strong> on the higher-DoF Wuji hand. -- 2x speed</p>
+          </div>
+        </div>
+        <div class="video-card">
+          <video controls playsinline preload="metadata">
+            <source src="assets/videos/cross_hand_generalization_oymotion.mp4" type="video/mp4">
+          </video>
+          <div class="video-meta">
+            <div class="media-title">Cross-Hand Transfer | Oymotion Hand</div>
+            <p class="media-desc">The same policy also transfers  <strong>zero-shot</strong>  to Oymotion with different kinematics. -- 2x speed</p>
+          </div>
+        </div>
+        <div class="video-card">
+          <video controls playsinline preload="metadata">
+            <source src="assets/videos/object_generalization.mp4" type="video/mp4">
+          </video>
+          <div class="video-meta">
+            <div class="media-title">Object Generalization | Inspire Hand</div>
+            <p class="media-desc">The coffee-making policy transfers to an unseen kettle with different color, size, and geometry. -- 2x speed</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- <div class="grid-2">
+        <div class="panel">
+          <h3>Object Generalization Figure</h3>
+          <div class="crop-shell crop-2">
+            <img src="assets/images/obj_generalization.png" alt="Object generalization figure">
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Hand Generalization Figure</h3>
+          <div class="crop-shell crop-2">
+            <img src="assets/images/hand_generalization.png" alt="Hand generalization figure">
+          </div>
+        </div>
+      </div> -->
+    </section>
+
+    <section class="section" id="cap">
+      <h2>UniDex-Cap</h2>
+      <p>
+        UniDex-Cap is a portable human data capture setup that records synchronized RGB-D streams and hand poses,
+        then converts them into robot-executable trajectories through the same transformation pipeline. It can be used to collect human data for <strong>human-robot data co-training.</strong>
+      </p>
+      <div class="figure">
+        <div class="crop-shell crop-1">
+          <img src="assets/images/unidexcap.png" alt="UniDex-Cap setup">
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="bibtex">
+      <h2>BibTeX</h2>
+      <pre>@inproceedings{zhang2026unidex,
+  title={UniDex: A Robot Foundation Suite for Universal Dexterous Hand Control from Egocentric Human Videos},
+  author={Zhang, Gu and Xu, Qicheng and Zhang, Haozhe and Ma, Jianhan and He, Long and Bao, Yiming and Ping, Zeyu and Yuan, Zhecheng and Lu, Chenhao and Yuan, Chengbo and Liang, Tianhai and Tian, Xiaoyu and Shao, Maanping and Zhang, Feihong and Ding, Mingyu and Gao, Yang and Zhao, Hao and Zhao, Hang and Xu, Huazhe},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  year={2026}
+}</pre>
+    </section>
+
+    <footer>
+      UniDex project page.
+    </footer>
+  </div>
 </body>
 </html>
